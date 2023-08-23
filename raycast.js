@@ -100,6 +100,17 @@ class Ray {
     }
     render() {
         stroke("blue");
+        var Ay = Math.floor(player.y / TILE_SIZE ) * TILE_SIZE;
+        var Ax = player.x + (player.y - Ay) / Math.tan(this.rayAngel) * player.turnDirection;
+        /* Ay += 32;
+        Ax += 32 / Math.tan(this.rayAngel); */
+        while(!grid.hasWallAt(Ay, Ax)){
+            Ay += 32;
+            Ax += 32 / Math.tan(this.rayAngel);
+        }
+        line(player.x, player.y, 
+            Ax,
+            Ay);
         line(player.x, player.y, 
             player.x + Math.cos(this.rayAngel) * 30,
             player.y + Math.sin(this.rayAngel) * 30);

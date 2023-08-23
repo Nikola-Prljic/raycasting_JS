@@ -33,7 +33,17 @@ class Map {
             }
         }
     }
+    hasWallAt(y, x) {
+        if ( x < 0 || x > WINDOW_WIDTH || y < 0 || y > WINDOW_HEIGHT)
+            return 1;
+        var mapGridIndexX = Math.floor(x / TILE_SIZE);
+        var mapGridIndexY = Math.floor(y / TILE_SIZE);
+        if(this.grid[mapGridIndexY][mapGridIndexX] == 0)
+            return 0;
+        return 1;
+    }
 }
+
 
 class Player{
     constructor() {
@@ -50,7 +60,14 @@ class Player{
         this.rotationAngle += this.turnDirection * this.rotationSpeed;
         
         var moveStep = this.walkDirection * this.moveSpeed;
-        this.x += 
+        
+        var newPlayerX = this.x + moveStep * Math.cos(this.rotationAngle);
+        var newPlayerY = this.y + moveStep * Math.sin(this.rotationAngle);
+        if(!grid.hasWallAt(newPlayerY, newPlayerX))
+        {
+            this.x = newPlayerX;
+            this.y = newPlayerY;
+        }
     }
     render() {
         noStroke();
@@ -58,13 +75,22 @@ class Player{
         circle(this.x, this.y, this.radius);
         stroke("red");
         line(this.x, this.y, 
-            this.x + Math.cos(this.rotationAngle) * 30,
-            this.y + Math.sin(this.rotationAngle) * 30);
+        this.x + Math.cos(this.rotationAngle) * 30,
+        this.y + Math.sin(this.rotationAngle) * 30);
+    //var x = 0.1;
+    //stroke("blue");
+    //for(var i = 0; i < 62; i++)
+    //{
+        //    line(this.x, this.y, 
+        //        this.x + Math.cos(this.rotationAngle + x) * 30,
+        //        this.y + Math.sin(this.rotationAngle + x) * 30);
+        //    x += 0.1;
+        //}
     }
 }
 
-var grid = new Map();
 var player = new Player();
+var grid = new Map();
 
 function keyPressed() {
     if (keyCode == UP_ARROW){
@@ -77,7 +103,7 @@ function keyPressed() {
         player.turnDirection = -1;
     }
 }
-
+            
 function keyReleased() {
     if (keyCode == UP_ARROW){
         player.walkDirection = 0;

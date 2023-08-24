@@ -1,4 +1,4 @@
-const TILE_SIZE = 64;
+const TILE_SIZE = 40;
 const MAP_NUM_ROWS = 11;
 const MAP_NUM_CLOS = 15;
 
@@ -29,12 +29,12 @@ class Map {
     render() {
         for (var y = 0; y < MAP_NUM_ROWS; y++){
             for (var x = 0; x < MAP_NUM_CLOS; x++){
-                var tildeX = x * TILE_SIZE;
-                var tildeY = y * TILE_SIZE;
+                var tildeX = x * TILE_SIZE / 4;
+                var tildeY = y * TILE_SIZE / 4;
                 var tildeColor = this.grid[y][x] == 1 ? "#222" : "#fff";
                 stroke("#222");
                 fill(tildeColor);
-                rect(tildeX, tildeY, TILE_SIZE, TILE_SIZE);
+                rect(tildeX, tildeY, TILE_SIZE / 4, TILE_SIZE / 4);
             }
         }
     }
@@ -76,7 +76,7 @@ class Player{
     render() {
         noStroke();
         fill("red");
-        circle(this.x, this.y, this.radius);
+        circle(this.x / 4, this.y / 4, this.radius / 4);
         /* stroke("red");
         line(this.x, this.y, 
         this.x + Math.cos(this.rotationAngle) * 30,
@@ -202,10 +202,24 @@ class Ray {
         this.distance = (horzHitDistance < vertHitDistance) ? horzHitDistance : vertHitDistance;
         this.wasHitVerttical = (vertHitDistance < horzHitDistance);
         
+        var distanceProjPlane = (WINDOW_WIDTH / 2) / Math.tan(FOV_ANGLE / 2);
+        var wallStripHeight = (TILE_SIZE / this.distance) * distanceProjPlane;
+    
+        noStroke();
+        fill('#6CD238');
+        if(columId % 8 == 0)
+            rect(columId * WALL_STRIP_WITH, WINDOW_HEIGHT / 2 - wallStripHeight / 2,  WALL_STRIP_WITH, wallStripHeight);
+        else
+        {
+            fill("grey");
+            rect(columId * WALL_STRIP_WITH, WINDOW_HEIGHT / 2 - wallStripHeight / 2,  WALL_STRIP_WITH, wallStripHeight);
+        }
     }
     render() {
         stroke("red");
-        line(player.x, player.y, this.wallHitX, this.wallHitY);
+        line(player.x / 4, player.y / 4, this.wallHitX / 4, this.wallHitY / 4);
+
+        
         /* var Ay = Math.floor(player.y / TILE_SIZE ) * TILE_SIZE;
         var Ax = player.x + (Ay - player.y) / Math.tan(this.rayAngel);
         while(!grid.hasWallAt(Ay, Ax)){
@@ -278,6 +292,10 @@ function setup() {
 
 function update() {
     player.update();
+    fill('#6EE8FF');
+    rect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT / 2);
+    fill('#865900');
+    rect(0, WINDOW_HEIGHT / 2, WINDOW_WIDTH, WINDOW_HEIGHT);
     castAllRays();
     // update game obj before next frame
 } 

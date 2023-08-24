@@ -81,7 +81,6 @@ class Player{
         line(this.x, this.y, 
         this.x + Math.cos(this.rotationAngle) * 30,
         this.y + Math.sin(this.rotationAngle) * 30);
-        console.log(this.rotationAngle);
     //var x = 0.1;
     //stroke("blue");
     //for(var i = 0; i < 62; i++)
@@ -96,24 +95,114 @@ class Player{
 
 class Ray {
     constructor(rayAngel) {
-        this.rayAngel = rayAngel;
+        this.rayAngel = normalizeAngle(rayAngel);
+        this.wallHitX = 0;
+        this.wallHitY = 0;
+        this.distance = 0;
+
+        this.isRayFacingDowm = this.rayAngel > 0 && this.rayAngel < Math.PI;
+        this.isRayFacingUp = !this.isRayFacingDowm;
+
+        this.isRayFacingRight = this.rayAngel < 0.5 * Math.PI || this.rayAngel > 1.5 * Math.PI;
+        this.isRayFacingLeft = !this.isRayFacingRight;
+    }
+    cast(columId) {
+        var xintercept, yintercept;
+        var xstep, ystep;
+
+        //////////////////
+        /// HORIZONTAL ///
+        //////////////////
+        var foundHorzWallhit = false;
+        var vertWallHitX = 0;
+        var vertWallHitY = 0;
+
+        //find the y cor of the cosest horizontal
+        yintercept = Math.floor(player.y / TILE_SIZE) * TILE_SIZE;
+        yintercept += this.isRayFacingDowm ? TILE_SIZE : 0;
+
+        //find the x of the closest inter
+        xintercept = player.x + (yintercept - player.y) / Math.tan(this.rayAngel);
+
+        // calc the incroment
+        ystep = TILE_SIZE;
+        ystep *= this.isRayFacingUp ? -1 : 1;
+
+        xstep = TILE_SIZE / Math.tan(this.rayAngel);
+        xstep *= (this.isRayFacingLeft && xstep > 0) ? -1 : 1;
+        xstep *= (this.isRayFacingRight && xstep < 0) ? -1 : 1;
+
+        var nextHorzTouchX = xintercept;
+        var nextHorzTouchY = yintercept;
+
+        if (this.isRayFacingUp)
+            nextHorzTouchY--;
+        // increment xstep and y step until wall
+        while(nextHorzTouchX >= 0 && nextHorzTouchX <= WINDOW_WIDTH && nextHorzTouchY >= 0 && nextHorzTouchY <= WINDOW_HEIGHT) {
+            if(grid.hasWallAt(nextHorzTouchY, nextHorzTouchX) == 1){
+                foundHorzWallhit = true;
+                vertWallHitX = nextHorzTouchX;
+                vertWallHitY = nextHorzTouchY;
+                stroke("red");
+                line(player.x, player.y, vertWallHitX, vertWallHitY);
+                break ;
+            }
+            else{
+                nextHorzTouchX += xstep;
+                nextHorzTouchY += ystep;
+            }
+        }
+        //////////////////
+        ///  VERTICAL  ///
+        //////////////////
+        var foundVertWallhit = false;
+        var vertWallHitX = 0;
+        var vertWallHitY = 0;
+
+        xintercept = Math.floor(player.x / TILE_SIZE) * TILE_SIZE;
+        xintercept += this.isRayFacingRight ? TILE_SIZE : 0;
+
+        yintercept = player.y + (xintercept - player.x) * Math.tan(this.rayAngel);
+
+        // calc the incroment
+        xstep = TILE_SIZE;
+        xstep *= this.isRayFacingLeft ? -1 : 1;
+
+        ystep = TILE_SIZE * Math.tan(this.rayAngel);
+        ystep *= (this.isRayFacingLeft && xstep > 0) ? -1 : 1;
+        ystep *= (this.isRayFacingRight && xstep < 0) ? -1 : 1;
+
+        var nextVertTouchX = xintercept;
+        var nextVertTouchY = yintercept;
+
+        if (this.isRayFacingUp)
+            nextVertTouchY--;
+        // increment xstep and y step until wall
+        while(nextVertTouchX >= 0 && nextVertTouchX <= WINDOW_WIDTH && nextVertTouchY >= 0 && nextVertTouchY <= WINDOW_HEIGHT) {
+            if(grid.hasWallAt(nextVertTouchY, nextVertTouchX) == 1){
+                foundVertWallhit = true;
+                vertWallHitX = nextVertTouchX;
+                vertWallHitY = nextVertTouchY;
+                stroke("blue");
+                line(player.x, player.y, vertWallHitX, vertWallHitY);
+                break ;
+            }
+            else{
+                nextVertTouchX += xstep;
+                nextVertTouchY += ystep;
+            }
+        }
     }
     render() {
-        stroke("blue");
-        var Ay = Math.floor(player.y / TILE_SIZE ) * TILE_SIZE;
-        var Ax = player.x + (player.y - Ay) / Math.tan(this.rayAngel) * player.turnDirection;
-        /* Ay += 32;
-        Ax += 32 / Math.tan(this.rayAngel); */
+        /* var Ay = Math.floor(player.y / TILE_SIZE ) * TILE_SIZE;
+        var Ax = player.x + (Ay - player.y) / Math.tan(this.rayAngel);
         while(!grid.hasWallAt(Ay, Ax)){
             Ay += 32;
             Ax += 32 / Math.tan(this.rayAngel);
         }
-        line(player.x, player.y, 
+        line(player.x, player.y,
             Ax,
-            Ay);
-        line(player.x, player.y, 
-            player.x + Math.cos(this.rayAngel) * 30,
-            player.y + Math.sin(this.rayAngel) * 30);
+            Ay); */
     }
 }
 
@@ -154,10 +243,18 @@ function castAllRays() {
     //for(var i = 0; i < NUM_RAYS; i++)
     for(var i = 0; i < 1; i++) {
         var ray = new Ray(rayAngel);
+        ray.cast(columId);
         rays.push(ray);
         rayAngel += FOV_ANGLE / NUM_RAYS;
         columId++;
     }
+}
+
+function normalizeAngle(angle) {
+    angle = angle % (2 * Math.PI);
+    if(angle < 0)
+        angle = (2 * Math.PI) + angle;
+    return angle;
 }
 
 function setup() {
@@ -166,7 +263,7 @@ function setup() {
 
 function update() {
     player.update();
-    castAllRays();
+    //castAllRays();
     // update game obj before next frame
 } 
 
@@ -177,4 +274,5 @@ function draw() {
         ray.render();
     }
     player.render();
+    castAllRays();
 }

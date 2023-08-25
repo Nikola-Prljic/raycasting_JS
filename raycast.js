@@ -12,6 +12,8 @@ const NUM_RAYS = WINDOW_WIDTH / WALL_STRIP_WITH;
 
 const MINIMAP_SCALE_FACTOR = 0.3;
 
+const WALL_SHADER = 160;
+
 class Map {
     constructor() {
         this.grid = [
@@ -298,14 +300,17 @@ function reder3DProjectWalls()
             (WINDOW_HEIGHT / 2) - (wallStripHeight / 2),
             WALL_STRIP_WITH,
             wallStripHeight); */
-        fill('#6CD238');
+        var alpha = WALL_SHADER / correctWallDistance;
+        fill("rgba(255, 255, 255," + alpha +")");
+        rect(i * WALL_STRIP_WITH, WINDOW_HEIGHT / 2 - wallStripHeight / 2,  WALL_STRIP_WITH, wallStripHeight);
+        /* fill(255, 255, 255);
         if(i % 8 == 0)
             rect(i * WALL_STRIP_WITH, WINDOW_HEIGHT / 2 - wallStripHeight / 2,  WALL_STRIP_WITH, wallStripHeight);
         else
         {
             fill("grey");
             rect(i * WALL_STRIP_WITH, WINDOW_HEIGHT / 2 - wallStripHeight / 2,  WALL_STRIP_WITH, wallStripHeight);
-        }
+        } */
     }
 }
 
@@ -326,10 +331,11 @@ function setup() {
 
 function update() {
     player.update();
-    fill('#6EE8FF');
+    background("grey");
+    /* fill('#6EE8FF');
     rect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT / 2);
     fill('#865900');
-    rect(0, WINDOW_HEIGHT / 2, WINDOW_WIDTH, WINDOW_HEIGHT);
+    rect(0, WINDOW_HEIGHT / 2, WINDOW_WIDTH, WINDOW_HEIGHT); */
     castAllRays();
     // update game obj before next frame
 } 

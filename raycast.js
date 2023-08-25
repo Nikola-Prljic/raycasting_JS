@@ -10,6 +10,8 @@ const FOV_ANGLE = 60 * (Math.PI / 180);
 const WALL_STRIP_WITH = 1;
 const NUM_RAYS = WINDOW_WIDTH / WALL_STRIP_WITH;
 
+const MINIMAP_SCALE_FACTOR = 0.3;
+
 class Map {
     constructor() {
         this.grid = [
@@ -29,12 +31,15 @@ class Map {
     render() {
         for (var y = 0; y < MAP_NUM_ROWS; y++){
             for (var x = 0; x < MAP_NUM_CLOS; x++){
-                var tildeX = x * TILE_SIZE / 4;
-                var tildeY = y * TILE_SIZE / 4;
+                var tildeX = x * TILE_SIZE;
+                var tildeY = y * TILE_SIZE;
                 var tildeColor = this.grid[y][x] == 1 ? "#222" : "#fff";
                 stroke("#222");
                 fill(tildeColor);
-                rect(tildeX, tildeY, TILE_SIZE / 4, TILE_SIZE / 4);
+                rect(MINIMAP_SCALE_FACTOR * tildeX, 
+                    MINIMAP_SCALE_FACTOR * tildeY, 
+                    MINIMAP_SCALE_FACTOR * TILE_SIZE, 
+                    MINIMAP_SCALE_FACTOR * TILE_SIZE);
             }
         }
     }
@@ -76,7 +81,9 @@ class Player{
     render() {
         noStroke();
         fill("red");
-        circle(this.x / 4, this.y / 4, this.radius / 4);
+        circle(MINIMAP_SCALE_FACTOR * this.x, 
+            MINIMAP_SCALE_FACTOR * this.y, 
+            MINIMAP_SCALE_FACTOR * this.radius);
         /* stroke("red");
         line(this.x, this.y, 
         this.x + Math.cos(this.rotationAngle) * 30,
@@ -202,10 +209,10 @@ class Ray {
         this.distance = (horzHitDistance < vertHitDistance) ? horzHitDistance : vertHitDistance;
         this.wasHitVerttical = (vertHitDistance < horzHitDistance);
         
-        var distanceProjPlane = (WINDOW_WIDTH / 2) / Math.tan(FOV_ANGLE / 2);
-        var wallStripHeight = (TILE_SIZE / this.distance) * distanceProjPlane;
+        /* var distanceProjPlane = (WINDOW_WIDTH / 2) / Math.tan(FOV_ANGLE / 2);
+        var wallStripHeight = (TILE_SIZE / this.distance) * distanceProjPlane; */
     
-        noStroke();
+        /* noStroke();
         fill('#6CD238');
         if(columId % 8 == 0)
             rect(columId * WALL_STRIP_WITH, WINDOW_HEIGHT / 2 - wallStripHeight / 2,  WALL_STRIP_WITH, wallStripHeight);
@@ -213,11 +220,14 @@ class Ray {
         {
             fill("grey");
             rect(columId * WALL_STRIP_WITH, WINDOW_HEIGHT / 2 - wallStripHeight / 2,  WALL_STRIP_WITH, wallStripHeight);
-        }
+        } */
     }
     render() {
         stroke("red");
-        line(player.x / 4, player.y / 4, this.wallHitX / 4, this.wallHitY / 4);
+        line(MINIMAP_SCALE_FACTOR * player.x, 
+            MINIMAP_SCALE_FACTOR * player.y, 
+            MINIMAP_SCALE_FACTOR * this.wallHitX,
+            MINIMAP_SCALE_FACTOR *  this.wallHitY);
 
         
         /* var Ay = Math.floor(player.y / TILE_SIZE ) * TILE_SIZE;
@@ -275,6 +285,31 @@ function castAllRays() {
     }
 }
 
+function reder3DProjectWalls()
+{
+    for(var i = 0; i < NUM_RAYS; i++){
+        var ray = rays[i];
+        var rayDistance = ray.distance;
+        var distanceProjPlane = (WINDOW_HEIGHT / 2) / Math.tan(FOV_ANGLE / 2);
+        var wallStripHeight = (TILE_SIZE / rayDistance) * distanceProjPlane;
+        /* fill("red"); */
+        noStroke();
+        /* rect(
+            i * WALL_STRIP_WITH,
+            (WINDOW_HEIGHT / 2) - (wallStripHeight / 2),
+            WALL_STRIP_WITH,
+            wallStripHeight); */
+        fill('#6CD238');
+        if(i % 8 == 0)
+            rect(i * WALL_STRIP_WITH, WINDOW_HEIGHT / 2 - wallStripHeight / 2,  WALL_STRIP_WITH, wallStripHeight);
+        else
+        {
+            fill("grey");
+            rect(i * WALL_STRIP_WITH, WINDOW_HEIGHT / 2 - wallStripHeight / 2,  WALL_STRIP_WITH, wallStripHeight);
+        }
+    }
+}
+
 function normalizeAngle(angle) {
     angle = angle % (2 * Math.PI);
     if(angle < 0)
@@ -302,6 +337,7 @@ function update() {
 
 function draw() {
     update();
+    reder3DProjectWalls();
     grid.render();
     for (ray of rays){
         ray.render();

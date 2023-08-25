@@ -12,7 +12,7 @@ const NUM_RAYS = WINDOW_WIDTH / WALL_STRIP_WITH;
 
 const MINIMAP_SCALE_FACTOR = 0.3;
 
-const WALL_SHADER = 160;
+const WALL_SHADER = 200;
 
 class Map {
     constructor() {
@@ -309,7 +309,7 @@ function reder3DProjectWalls()
             WALL_STRIP_WITH,
             wallStripHeight); */
         var alpha = WALL_SHADER / correctWallDistance;
-        var color = ray.wasHitVerttical ? 200 : 180;
+        var color = ray.wasHitVerttical ? 255 : 210;
         fill("rgba("+color+","+color+","+color+","+alpha+")");
         rect(i * WALL_STRIP_WITH, WINDOW_HEIGHT / 2 - wallStripHeight / 2,  WALL_STRIP_WITH, wallStripHeight);
         /* fill(255, 255, 255);

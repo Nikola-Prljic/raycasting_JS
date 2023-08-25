@@ -116,7 +116,7 @@ class Ray {
         this.isRayFacingRight = this.rayAngel < 0.5 * Math.PI || this.rayAngel > 1.5 * Math.PI;
         this.isRayFacingLeft = !this.isRayFacingRight;
     }
-    cast(columId) {
+    cast() {
         var xintercept, yintercept;
         var xstep, ystep;
 
@@ -206,10 +206,21 @@ class Ray {
         var vertHitDistance = (foundVertWallhit)
         ? distanceBetweenPoints(player.x, player.y, vertWallHitX, vertWallHitY)
         : Number.MAX_VALUE;
-        this.wallHitX = (horzHitDistance < vertHitDistance) ? HorzWallHitX : vertWallHitX;
+        if(vertHitDistance < horzHitDistance){
+            this.wallHitX = vertWallHitX;
+            this.wallHitY = vertWallHitY;
+            this.distance = vertHitDistance;
+            this.wasHitVerttical = true;
+        } else {
+            this.wallHitX = HorzWallHitX;
+            this.wallHitY = HorzWallHitY;
+            this.distance = horzHitDistance;
+            this.wasHitVerttical = false;
+        }
+        /* this.wallHitX = (horzHitDistance < vertHitDistance) ? HorzWallHitX : vertWallHitX;
         this.wallHitY = (horzHitDistance < vertHitDistance) ? HorzWallHitY : vertWallHitY;
         this.distance = (horzHitDistance < vertHitDistance) ? horzHitDistance : vertHitDistance;
-        this.wasHitVerttical = (vertHitDistance < horzHitDistance);
+        this.wasHitVerttical = (vertHitDistance < horzHitDistance); */
         /* var distanceProjPlane = (WINDOW_WIDTH / 2) / Math.tan(FOV_ANGLE / 2);
         var wallStripHeight = (TILE_SIZE / this.distance) * distanceProjPlane; */
     
@@ -272,17 +283,14 @@ function keyReleased() {
 }
 
 function castAllRays() {
-    var columId = 0;
-
     // start firs thalf of FOV
     var rayAngel = player.rotationAngle - (FOV_ANGLE / 2);
     rays = [];
-    for(var i = 0; i < NUM_RAYS; i++) {
+    for(var colId = 0; colId < NUM_RAYS; colId++) {
         var ray = new Ray(rayAngel);
-        ray.cast(columId);
+        ray.cast();
         rays.push(ray);
         rayAngel += FOV_ANGLE / NUM_RAYS;
-        columId++;
     }
 }
 
@@ -301,7 +309,8 @@ function reder3DProjectWalls()
             WALL_STRIP_WITH,
             wallStripHeight); */
         var alpha = WALL_SHADER / correctWallDistance;
-        fill("rgba(255, 255, 255," + alpha +")");
+        var color = ray.wasHitVerttical ? 200 : 180;
+        fill("rgba("+color+","+color+","+color+","+alpha+")");
         rect(i * WALL_STRIP_WITH, WINDOW_HEIGHT / 2 - wallStripHeight / 2,  WALL_STRIP_WITH, wallStripHeight);
         /* fill(255, 255, 255);
         if(i % 8 == 0)

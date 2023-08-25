@@ -208,7 +208,6 @@ class Ray {
         this.wallHitY = (horzHitDistance < vertHitDistance) ? HorzWallHitY : vertWallHitY;
         this.distance = (horzHitDistance < vertHitDistance) ? horzHitDistance : vertHitDistance;
         this.wasHitVerttical = (vertHitDistance < horzHitDistance);
-        
         /* var distanceProjPlane = (WINDOW_WIDTH / 2) / Math.tan(FOV_ANGLE / 2);
         var wallStripHeight = (TILE_SIZE / this.distance) * distanceProjPlane; */
     
@@ -289,9 +288,9 @@ function reder3DProjectWalls()
 {
     for(var i = 0; i < NUM_RAYS; i++){
         var ray = rays[i];
-        var rayDistance = ray.distance;
+        var correctWallDistance = Math.cos(ray.rayAngel - player.rotationAngle) * ray.distance;;
         var distanceProjPlane = (WINDOW_HEIGHT / 2) / Math.tan(FOV_ANGLE / 2);
-        var wallStripHeight = (TILE_SIZE / rayDistance) * distanceProjPlane;
+        var wallStripHeight = (TILE_SIZE / correctWallDistance) * distanceProjPlane;
         /* fill("red"); */
         noStroke();
         /* rect(

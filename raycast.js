@@ -244,6 +244,7 @@ class Ray {
 
 var player = new Player();
 var grid = new Map();
+var ray = new Ray();
 var rays = [];
 
 function keyPressed() {
@@ -289,7 +290,7 @@ function reder3DProjectWalls()
 {
     for(var i = 0; i < NUM_RAYS; i++){
         var ray = rays[i];
-        var rayDistance = ray.distance;
+        var rayDistance = ray.distance * Math.cos(ray.rayAngel - player.rotationAngle);
         var distanceProjPlane = (WINDOW_HEIGHT / 2) / Math.tan(FOV_ANGLE / 2);
         var wallStripHeight = (TILE_SIZE / rayDistance) * distanceProjPlane;
         /* fill("red"); */

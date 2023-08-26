@@ -12,6 +12,8 @@ const NUM_RAYS = WINDOW_WIDTH / WALL_STRIP_WITH;
 
 const MINIMAP_SCALE_FACTOR = 0.3;
 
+const WALL_SHADER = 200;
+
 class Map {
     constructor() {
         this.grid = [
@@ -114,7 +116,7 @@ class Ray {
         this.isRayFacingRight = this.rayAngel < 0.5 * Math.PI || this.rayAngel > 1.5 * Math.PI;
         this.isRayFacingLeft = !this.isRayFacingRight;
     }
-    cast(columId) {
+    cast() {
         var xintercept, yintercept;
         var xstep, ystep;
 
@@ -204,11 +206,21 @@ class Ray {
         var vertHitDistance = (foundVertWallhit)
         ? distanceBetweenPoints(player.x, player.y, vertWallHitX, vertWallHitY)
         : Number.MAX_VALUE;
-        this.wallHitX = (horzHitDistance < vertHitDistance) ? HorzWallHitX : vertWallHitX;
+        if(vertHitDistance < horzHitDistance){
+            this.wallHitX = vertWallHitX;
+            this.wallHitY = vertWallHitY;
+            this.distance = vertHitDistance;
+            this.wasHitVerttical = true;
+        } else {
+            this.wallHitX = HorzWallHitX;
+            this.wallHitY = HorzWallHitY;
+            this.distance = horzHitDistance;
+            this.wasHitVerttical = false;
+        }
+        /* this.wallHitX = (horzHitDistance < vertHitDistance) ? HorzWallHitX : vertWallHitX;
         this.wallHitY = (horzHitDistance < vertHitDistance) ? HorzWallHitY : vertWallHitY;
         this.distance = (horzHitDistance < vertHitDistance) ? horzHitDistance : vertHitDistance;
-        this.wasHitVerttical = (vertHitDistance < horzHitDistance);
-        
+        this.wasHitVerttical = (vertHitDistance < horzHitDistance); */
         /* var distanceProjPlane = (WINDOW_WIDTH / 2) / Math.tan(FOV_ANGLE / 2);
         var wallStripHeight = (TILE_SIZE / this.distance) * distanceProjPlane; */
     
@@ -272,17 +284,14 @@ function keyReleased() {
 }
 
 function castAllRays() {
-    var columId = 0;
-
     // start firs thalf of FOV
     var rayAngel = player.rotationAngle - (FOV_ANGLE / 2);
     rays = [];
-    for(var i = 0; i < NUM_RAYS; i++) {
+    for(var colId = 0; colId < NUM_RAYS; colId++) {
         var ray = new Ray(rayAngel);
-        ray.cast(columId);
+        ray.cast();
         rays.push(ray);
         rayAngel += FOV_ANGLE / NUM_RAYS;
-        columId++;
     }
 }
 
@@ -290,9 +299,9 @@ function reder3DProjectWalls()
 {
     for(var i = 0; i < NUM_RAYS; i++){
         var ray = rays[i];
-        var rayDistance = ray.distance * Math.cos(ray.rayAngel - player.rotationAngle);
+        var correctWallDistance = Math.cos(ray.rayAngel - player.rotationAngle) * ray.distance;;
         var distanceProjPlane = (WINDOW_HEIGHT / 2) / Math.tan(FOV_ANGLE / 2);
-        var wallStripHeight = (TILE_SIZE / rayDistance) * distanceProjPlane;
+        var wallStripHeight = (TILE_SIZE / correctWallDistance) * distanceProjPlane;
         /* fill("red"); */
         noStroke();
         /* rect(
@@ -300,14 +309,18 @@ function reder3DProjectWalls()
             (WINDOW_HEIGHT / 2) - (wallStripHeight / 2),
             WALL_STRIP_WITH,
             wallStripHeight); */
-        fill('#6CD238');
+        var alpha = WALL_SHADER / correctWallDistance;
+        var color = ray.wasHitVerttical ? 255 : 210;
+        fill("rgba("+color+","+color+","+color+","+alpha+")");
+        rect(i * WALL_STRIP_WITH, WINDOW_HEIGHT / 2 - wallStripHeight / 2,  WALL_STRIP_WITH, wallStripHeight);
+        /* fill(255, 255, 255);
         if(i % 8 == 0)
             rect(i * WALL_STRIP_WITH, WINDOW_HEIGHT / 2 - wallStripHeight / 2,  WALL_STRIP_WITH, wallStripHeight);
         else
         {
             fill("grey");
             rect(i * WALL_STRIP_WITH, WINDOW_HEIGHT / 2 - wallStripHeight / 2,  WALL_STRIP_WITH, wallStripHeight);
-        }
+        } */
     }
 }
 
@@ -328,10 +341,11 @@ function setup() {
 
 function update() {
     player.update();
-    fill('#6EE8FF');
+    background("grey");
+    /* fill('#6EE8FF');
     rect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT / 2);
     fill('#865900');
-    rect(0, WINDOW_HEIGHT / 2, WINDOW_WIDTH, WINDOW_HEIGHT);
+    rect(0, WINDOW_HEIGHT / 2, WINDOW_WIDTH, WINDOW_HEIGHT); */
     castAllRays();
     // update game obj before next frame
 } 
